@@ -1,10 +1,12 @@
-import { BlurView } from "expo-blur";
-import * as Haptics from "expo-haptics";
 import { useRef, useState } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  Dimensions,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CodigoSection from "../components/CodigoSection";
-
-//const { containerWidth } = Dimensions.get("window");
 
 const tabs = ["AMS", "FORD", "STELLANTIS"];
 
@@ -22,6 +24,8 @@ const averiasStellantis = require("../utils/averias-stellantis.json");
 const gravedadesStellantis = require("../utils/gravedades-stellantis.json");
 
 export default function HomeScreen() {
+  const { width } = Dimensions.get("window");
+
   const scrollRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -30,9 +34,6 @@ export default function HomeScreen() {
 
   // 🔥 fade animación (segura)
   const fade = useRef(new Animated.Value(1)).current;
-
-  const [containerWidth, setContainerWidth] = useState(0);
-  const tabWidth = containerWidth / tabs.length;
 
   const toggleTheme = () => {
     Animated.sequence([
@@ -51,40 +52,12 @@ export default function HomeScreen() {
     setDark((prev) => !prev);
   };
 
-  // 🔥 animación tabs
-  const scaleAnims = useRef(tabs.map(() => new Animated.Value(1))).current;
-
-  const animateTab = (i) => {
-    scaleAnims.forEach((anim, idx) => {
-      Animated.spring(anim, {
-        toValue: idx === i ? 1.1 : 1,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
-
-  const goToTab = (i) => {
-    setIndex(i);
-    animateTab(i);
-    Haptics.selectionAsync();
-
-    scrollRef.current?.scrollTo({ x: i * containerWidth, animated: true });
-  };
-
-  // 🔵 indicador
-  const indicatorTranslateX = scrollX.interpolate({
-    inputRange: [0, containerWidth * (tabs.length - 1)],
-    outputRange: [0, tabWidth * (tabs.length - 1)],
-    extrapolate: "clamp",
-  });
-
   return (
     <Animated.View
       style={{
-        flex: 1,
         backgroundColor: dark ? "#121212" : "#f4f0f0",
         opacity: fade,
-        top: 50,
+        paddingTop: 50,
       }}
     >
       {/* 🔘 BOTÓN DARK MODE */}
@@ -93,7 +66,7 @@ export default function HomeScreen() {
         style={{
           position: "absolute",
           right: 15,
-          top: 50,
+          top: 97,
           zIndex: 10,
           backgroundColor: dark ? "#333" : "#fff",
           padding: 10,
@@ -106,88 +79,61 @@ export default function HomeScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* 🧊 HEADER */}
-      <BlurView
-        intensity={100}
-        tint={dark ? "dark" : "light"}
+      {/* 🧊 HEADER SIMPLE */}
+      <View
         style={{
-          backgroundColor: dark ? "rgba(20,20,20,0.8)" : "#f4f0f0cc",
-          paddingTop: 12,
-          paddingBottom: 10,
-          borderBottomWidth: 0.8,
+          backgroundColor: dark ? "#121212" : "#fff",
+          borderBottomWidth: 0.5,
           borderColor: dark ? "#333" : "#e0e0e0",
         }}
       >
-        <View
-          onLayout={(e) => {
-            setContainerWidth(e.nativeEvent.layout.width);
-          }}
-          style={{ flexDirection: "row" }}
-        >
-          {tabs.map((t, i) => {
-            const active = index === i;
-
-            return (
-              <TouchableOpacity
-                key={t}
-                onPress={() => goToTab(i)}
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          {tabs.map((t, i) => (
+            <TouchableOpacity
+              key={t}
+              onPress={() => {
+                setIndex(i);
+                scrollRef.current?.scrollTo({ x: i * width, animated: true });
+              }}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                backgroundColor: ["#ffcccc", "#ccffcc", "#ccccff"][i],
+                paddingVertical: 10,
+              }}
+            >
+              <Text
                 style={{
-                  width: tabWidth,
-                  alignItems: "center",
-                  paddingVertical: 6,
+                  fontWeight: "700",
+                  color: index === i ? (dark ? "#fff" : "#000") : "#888",
                 }}
               >
-                <Animated.Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "700",
-                    transform: [{ scale: scaleAnims[i] }],
-                    color: active ? (dark ? "#ffffff" : "#2b2b2b") : "#9e9e9e",
-                  }}
-                >
-                  {t}
-                </Animated.Text>
-              </TouchableOpacity>
-            );
-          })}
+                {t}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-
-        {/* 🔵 indicador */}
-        <View style={{ height: 3, marginTop: 6 }}>
-          <Animated.View
-            style={{
-              position: "absolute",
-              height: 3,
-              width: tabWidth * 0.4,
-              backgroundColor: "#54bca2",
-              borderRadius: 2,
-              left: tabWidth * 0.3,
-              transform: [{ translateX: indicatorTranslateX }],
-            }}
-          />
-        </View>
-      </BlurView>
+      </View>
 
       {/* 📦 CONTENIDO */}
       <Animated.ScrollView
         ref={scrollRef}
         horizontal
         pagingEnabled
+        contentOffset={{ x: 0, y: 0 }}
+        style={{ width: width }}
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
         onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(
-            e.nativeEvent.contentOffset.x / containerWidth,
-          );
+          const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
           setIndex(newIndex);
-          animateTab(newIndex);
         }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true },
         )}
       >
-        <View style={{ padding: 15 }}>
+        <View style={{ width: width, padding: 15 }}>
           <CodigoSection
             title="Códigos AMS"
             areasJson={areasAMS}
@@ -197,7 +143,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View style={{ padding: 15 }}>
+        <View style={{ width: width, padding: 15 }}>
           <CodigoSection
             title="Códigos Ford"
             areasJson={areasFord}
@@ -207,7 +153,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View style={{ padding: 15 }}>
+        <View style={{ width: width, padding: 15 }}>
           <CodigoSection
             title="Códigos Stellantis"
             areasJson={areasStellantis}
