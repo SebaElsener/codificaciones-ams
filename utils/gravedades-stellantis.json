@@ -1,0 +1,9 @@
+[
+  { "id": "1", "descripcion": "Menor 1 cm" },
+  { "id": "2", "descripcion": "1 - 3 cm" },
+  { "id": "3", "descripcion": "3 - 10 cm" },
+  { "id": "4", "descripcion": "10 - 20 cm" },
+  { "id": "5", "descripcion": "Mayor 20 cm" },
+  { "id": "6", "descripcion": "Severo - Posible sustitución de pieza" },
+  { "id": "0", "descripcion": "Otros" }
+]

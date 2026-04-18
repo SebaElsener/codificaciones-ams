@@ -1,0 +1,8 @@
+[
+  { "id": "A", "descripcion": "ABOLLADO" },
+  { "id": "G", "descripcion": "Rayado" },
+  { "id": "M", "descripcion": "Faltante" },
+  { "id": "R", "descripcion": "Fracturado" },
+  { "id": "S", "descripcion": "Raspado" },
+  { "id": "I", "descripcion": "Sucio - Manchado" }
+]

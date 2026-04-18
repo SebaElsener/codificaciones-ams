@@ -1,0 +1,9 @@
+[
+  { "id": "1", "descripcion": "Hasta 2.5 cm" },
+  { "id": "2", "descripcion": "2.5 a 7.5 cm" },
+  { "id": "3", "descripcion": "7.5 a 15 cm" },
+  { "id": "4", "descripcion": "15 a 30 cm" },
+  { "id": "5", "descripcion": "Mayor a 30 cm" },
+  { "id": "6", "descripcion": "Faltante" },
+  { "id": "0", "descripcion": "Otros" }
+]
