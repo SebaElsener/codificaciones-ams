@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Animated, Dimensions, Text, View } from "react-native";
 import Dropdown from "../components/Dropdown";
 
 export default function CodigoSection({
@@ -8,6 +8,9 @@ export default function CodigoSection({
   averiasJson,
   gravedadesJson,
   dark,
+  active,
+  baseColors,
+  scrollX,
 }) {
   const [area, setArea] = useState("");
   const [averia, setAveria] = useState("");
@@ -34,6 +37,20 @@ export default function CodigoSection({
     value: p.id,
   }));
 
+  useEffect(() => {
+    if (!active) {
+      // 🔄 reset completo
+      setArea("");
+      setAveria("");
+      setGrav("");
+
+      setAreaSearch("");
+      setFilteredAreas(areasDropdown);
+
+      setOpenDropdown(null);
+    }
+  }, [active]);
+
   // 🔹 filtro búsqueda
   useEffect(() => {
     if (!areaSearch) {
@@ -55,8 +72,30 @@ export default function CodigoSection({
   // 🔹 código compacto
   const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
 
+  const soften = (hex, alpha = 0.25) =>
+    hex +
+    Math.round(alpha * 255)
+      .toString(16)
+      .padStart(2, "0");
+
+  const { width } = Dimensions.get("window");
+
+  const inputRange = baseColors.map((_, i) => i * width);
+
+  const backgroundColor = scrollX.interpolate({
+    inputRange,
+    outputRange: baseColors.map((c) => soften(c, dark ? 0.15 : 0.35)),
+    extrapolate: "clamp",
+  });
+
   return (
-    <View style={{ marginBottom: 30 }}>
+    <Animated.View
+      style={{
+        padding: 15,
+        zIndex: active ? 999 : 0,
+        backgroundColor,
+      }}
+    >
       <Text
         style={{
           fontSize: 18,
@@ -133,6 +172,6 @@ export default function CodigoSection({
           </Text>
         </View>
       )}
-    </View>
+    </Animated.View>
   );
 }

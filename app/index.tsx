@@ -1,5 +1,10 @@
 import HomeScreen from "@/Screen/Home";
+import { View } from "react-native";
 
 export default function Index() {
-  return <HomeScreen />;
+  return (
+    <View style={{ padding: 20 }}>
+      <HomeScreen />
+    </View>
+  );
 }
