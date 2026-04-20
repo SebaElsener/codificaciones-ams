@@ -1,14 +1,11 @@
 import { useRef, useState } from "react";
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
+import PagerView from "react-native-pager-view";
 import CodigoSection from "../components/CodigoSection";
 
 const tabs = ["AMS", "FORD", "STELLANTIS"];
+
+const baseColors = ["#f04646", "#51ca51", "#4343d5"];
 
 // JSONs
 const areasAMS = require("../utils/areas-ams.json");
@@ -24,237 +21,185 @@ const averiasStellantis = require("../utils/averias-stellantis.json");
 const gravedadesStellantis = require("../utils/gravedades-stellantis.json");
 
 export default function HomeScreen() {
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  const scrollRef = useRef(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const pagerRef = useRef(null);
 
   const [index, setIndex] = useState(0);
-  const [dark, setDark] = useState(false);
 
-  // 🔥 fade animación (segura)
-  const fade = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(-6)).current;
 
-  // 🎨 COLOR BASE
-  const baseColors = ["#c96565", "#30cb30", "#2a2ad6"];
+  const soften = (hex, amount = 0.7) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
 
-  const toggleTheme = () => {
-    Animated.sequence([
-      Animated.timing(fade, {
-        toValue: 0.85,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    const mix = (c) => Math.round(c + (255 - c) * amount);
 
-    setDark((prev) => !prev);
+    return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+  };
+  const handlePageChange = (i) => {
+    setIndex(i);
+
+    translateY.setValue(0); // 👈 bajar primero
+
+    Animated.spring(translateY, {
+      toValue: -6,
+      useNativeDriver: true,
+      tension: 120,
+      friction: 8,
+    }).start();
   };
 
-  if (!containerWidth) return null;
-
   return (
-    <Animated.View
-      onLayout={(e) => {
-        setContainerWidth(e.nativeEvent.layout.width);
-      }}
+    <View
       style={{
-        backgroundColor: dark ? "#121212" : "#ffffff00",
-        opacity: fade,
-        paddingTop: 50,
+        flex: 1,
       }}
     >
-      {/* 🔘 BOTÓN DARK MODE */}
-      <TouchableOpacity
-        onPress={toggleTheme}
+      <Animated.View
         style={{
-          position: "absolute",
-          right: 15,
-          top: 97,
-          zIndex: 10,
-          backgroundColor: dark ? "#333" : "#fff",
-          padding: 10,
-          borderRadius: 20,
-          elevation: 5,
+          flex: 1,
+          paddingTop: 90,
         }}
       >
-        <Text style={{ color: dark ? "#f4f0f0" : "#000" }}>
-          {dark ? "☀️" : "🌙"}
-        </Text>
-      </TouchableOpacity>
-
-      {/* 🧊 HEADER SIMPLE */}
-      <View
-        style={{
-          backgroundColor: dark ? "#121212" : "#ffffff00",
-          // borderBottomWidth: 0,
-          // borderColor: dark ? "#333" : "#e0e0e0",
-        }}
-      >
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+        {/* 🧊 HEADER */}
+        <View style={{ flexDirection: "row" }}>
           {tabs.map((t, i) => {
-            const inputRange = [
-              (i - 1) * containerWidth,
-              i * containerWidth,
-              (i + 1) * containerWidth,
-            ];
-
-            // 🎯 TAB SUBE / BAJA
-            const translateY = scrollX.interpolate({
-              inputRange,
-              outputRange: [6, 0, 6],
-              extrapolate: "clamp",
-            });
-
-            // 🎨 MEZCLA DE COLOR (se vuelve más “fuerte” cuando está activa)
-            const backgroundColor = scrollX.interpolate({
-              inputRange,
-              outputRange: [
-                baseColors[i] + "88", // transparente
-                baseColors[i], // sólido
-                baseColors[i] + "88",
-              ],
-              extrapolate: "clamp",
-            });
-
-            // 🔤 TEXTO
-            const textColor = scrollX.interpolate({
-              inputRange,
-              outputRange: ["#888", dark ? "#fff" : "#000", "#888"],
-              extrapolate: "clamp",
-            });
+            const isActive = index === i;
 
             return (
-              <Animated.View
+              <TouchableOpacity
                 key={t}
+                onPress={() => {
+                  setIndex(i);
+                  pagerRef.current?.setPage(i);
+                  handlePageChange(i);
+                }}
                 style={{
                   flex: 1,
-                  transform: [{ translateY }],
-                  zIndex: 10,
+                  alignItems: "center",
+                  paddingVertical: 12,
+                  backgroundColor: isActive
+                    ? baseColors[i]
+                    : soften(baseColors[i], 0.7),
+                  borderTopLeftRadius: 10,
+                  borderTopRightRadius: 10,
+                  // transform: [{ translateY: isActive ? -6 : 0 }],
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => {
-                    setIndex(i);
-                    scrollRef.current?.scrollTo({
-                      x: i * containerWidth,
-                      animated: true,
-                    });
-                  }}
-                  activeOpacity={0.8}
+                <Text
                   style={{
-                    alignItems: "center",
-                    paddingVertical: 12,
-                    borderTopLeftRadius: 10,
-                    borderTopRightRadius: 10,
-                    overflow: "hidden",
+                    fontWeight: "700",
+                    color: isActive ? "#000" : "#555",
                   }}
                 >
-                  <Animated.View
-                    style={{
-                      ...StyleSheet.absoluteFillObject,
-                      backgroundColor,
-                    }}
-                  />
-
-                  <Animated.Text
-                    style={{
-                      fontWeight: "700",
-                      color: textColor,
-                    }}
-                  >
-                    {t}
-                  </Animated.Text>
-                </TouchableOpacity>
-              </Animated.View>
+                  {t}
+                </Text>
+              </TouchableOpacity>
             );
           })}
         </View>
-      </View>
-
-      {/* 📦 CONTENIDO */}
-      <Animated.ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        contentOffset={{ x: 0, y: 0 }}
-        style={{ width: containerWidth }}
-        showsHorizontalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(
-            e.nativeEvent.contentOffset.x / containerWidth,
-          );
-          setIndex(newIndex);
-        }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: true },
-        )}
-      >
-        <View
+        <Animated.View
           style={{
-            width: containerWidth,
-            //marginTop: 15,
-            backgroundColor: dark ? "#121212" : "#ffffff00",
+            position: "absolute",
+            top: 90, // ajustá según tu layout
+            left: `${(100 / tabs.length) * index}%`,
+            width: `${100 / tabs.length}%`,
+            transform: [{ translateY }],
+            zIndex: 20,
           }}
         >
-          <CodigoSection
-            title="Códigos AMS"
-            areasJson={areasAMS}
-            averiasJson={averiasAMS}
-            gravedadesJson={gravedadesAMS}
-            dark={dark}
-            active={index === 0}
-            baseColors={baseColors}
-            scrollX={scrollX}
-            pageIndex={0}
-          />
-        </View>
+          <View
+            style={{
+              alignItems: "center",
+              paddingVertical: 12,
+              backgroundColor: baseColors[index],
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+            }}
+          >
+            <Text style={{ fontWeight: "700" }}>{tabs[index]}</Text>
+          </View>
+        </Animated.View>
 
-        <View
+        {/* 📦 PAGER */}
+        <Animated.View
           style={{
-            width: containerWidth,
-            backgroundColor: dark ? "#121212" : "#fff",
+            flex: 1,
+            transform: [{ translateY }],
           }}
         >
-          <CodigoSection
-            title="Códigos Ford"
-            areasJson={areasFord}
-            averiasJson={averiasFord}
-            gravedadesJson={gravedadesFord}
-            dark={dark}
-            active={index === 1}
-            baseColors={baseColors}
-            scrollX={scrollX}
-            pageIndex={1}
-          />
-        </View>
+          <PagerView
+            ref={pagerRef}
+            style={{
+              flex: 1,
+              // transform: [{ translateY: -6 }]
+            }}
+            initialPage={0}
+            onPageSelected={(e) => {
+              handlePageChange(e.nativeEvent.position);
+            }}
+          >
+            <View key="0" style={{ flex: 1 }}>
+              <Animated.View
+                style={{
+                  flex: 1,
+                  // transform: [{ translateY: index === 0 ? -6 : 0 }],
+                }}
+              >
+                <CodigoSection
+                  title="Códigos AMS"
+                  areasJson={areasAMS}
+                  averiasJson={averiasAMS}
+                  gravedadesJson={gravedadesAMS}
+                  active={index === 0}
+                  baseColor={baseColors[0]}
+                />
+              </Animated.View>
+            </View>
 
-        <View
-          style={{
-            width: containerWidth,
-            //padding: 15,
-            backgroundColor: dark ? "#121212" : "#fff",
-          }}
-        >
-          <CodigoSection
-            title="Códigos Stellantis"
-            areasJson={areasStellantis}
-            averiasJson={averiasStellantis}
-            gravedadesJson={gravedadesStellantis}
-            dark={dark}
-            active={index === 2}
-            baseColors={baseColors}
-            scrollX={scrollX}
-            pageIndex={2}
-          />
-        </View>
-      </Animated.ScrollView>
-    </Animated.View>
+            <View
+              key="1"
+              style={{
+                flex: 1,
+              }}
+            >
+              <Animated.View
+                style={{
+                  flex: 1,
+                  // transform: [{ translateY: index === 1 ? -6 : 0 }],
+                }}
+              >
+                <CodigoSection
+                  title="Códigos Ford"
+                  areasJson={areasFord}
+                  averiasJson={averiasFord}
+                  gravedadesJson={gravedadesFord}
+                  active={index === 1}
+                  baseColor={baseColors[1]}
+                />
+              </Animated.View>
+            </View>
+
+            <View key="2" style={{ flex: 1 }}>
+              <Animated.View
+                style={{
+                  flex: 1,
+                  // transform: [{ translateY: index === 2 ? -6 : 0 }],
+                }}
+              >
+                <CodigoSection
+                  title="Códigos Stellantis"
+                  areasJson={areasStellantis}
+                  averiasJson={averiasStellantis}
+                  gravedadesJson={gravedadesStellantis}
+                  active={index === 2}
+                  baseColor={baseColors[2]}
+                />
+              </Animated.View>
+            </View>
+          </PagerView>
+        </Animated.View>
+      </Animated.View>
+    </View>
   );
 }

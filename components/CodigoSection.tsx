@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Animated, Dimensions, Text, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 import Dropdown from "../components/Dropdown";
 
 export default function CodigoSection({
@@ -9,8 +9,7 @@ export default function CodigoSection({
   gravedadesJson,
   dark,
   active,
-  baseColors,
-  scrollX,
+  baseColor,
 }) {
   const [area, setArea] = useState("");
   const [averia, setAveria] = useState("");
@@ -72,27 +71,27 @@ export default function CodigoSection({
   // 🔹 código compacto
   const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
 
-  const soften = (hex, alpha = 0.25) =>
-    hex +
-    Math.round(alpha * 255)
-      .toString(16)
-      .padStart(2, "0");
+  const soften = (hex, amount = 0.7) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
 
-  const { width } = Dimensions.get("window");
+    const mix = (c) => Math.round(c + (255 - c) * amount);
 
-  const inputRange = baseColors.map((_, i) => i * width);
+    return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+  };
 
-  const backgroundColor = scrollX.interpolate({
-    inputRange,
-    outputRange: baseColors.map((c) => soften(c, dark ? 0.15 : 0.35)),
-    extrapolate: "clamp",
-  });
+  const backgroundColor = active
+    ? soften(baseColor, dark ? 0.6 : 0.7)
+    : dark
+      ? "#121212"
+      : "#fff";
 
   return (
     <Animated.View
       style={{
+        //flex: 1,
         padding: 15,
-        zIndex: active ? 999 : 0,
         backgroundColor,
       }}
     >
