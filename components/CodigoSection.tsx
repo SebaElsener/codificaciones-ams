@@ -8,7 +8,8 @@ export default function CodigoSection({
   averiasJson,
   gravedadesJson,
   active,
-  animatedColor,
+  isOpen,
+  setOpenId,
 }) {
   const [area, setArea] = useState("");
   const [averia, setAveria] = useState("");
@@ -16,8 +17,6 @@ export default function CodigoSection({
 
   const [areaSearch, setAreaSearch] = useState("");
   const [filteredAreas, setFilteredAreas] = useState([]);
-
-  const [openDropdown, setOpenDropdown] = useState(null);
 
   // 🔹 transformar JSON → dropdown
   const areasDropdown = areasJson.map((p) => ({
@@ -44,8 +43,6 @@ export default function CodigoSection({
 
       setAreaSearch("");
       setFilteredAreas(areasDropdown);
-
-      setOpenDropdown(null);
     }
   }, [active]);
 
@@ -61,11 +58,6 @@ export default function CodigoSection({
       );
     }
   }, [areaSearch, areasDropdown]);
-
-  // 🔹 obtener objeto seleccionado completo
-  const selectedArea = areasDropdown.find((a) => a.value === area);
-  const selectedAveria = averiasDropdown.find((a) => a.value === averia);
-  const selectedGrav = gravedadesDropdown.find((g) => g.value === grav);
 
   // 🔹 código compacto
   // const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
@@ -90,33 +82,36 @@ export default function CodigoSection({
 
       <Dropdown
         id="areas"
-        isOpen={openDropdown}
-        setOpenId={setOpenDropdown}
+        isOpen={isOpen}
+        setOpenId={setOpenId}
         data={filteredAreas}
         selectedValue={area}
         onSelect={(item) => setArea(item.value)}
         placeholder="Seleccionar área"
         searchable
+        active={active}
         searchValue={areaSearch}
         onSearchChange={setAreaSearch}
       />
 
       <Dropdown
         id="averias"
-        isOpen={openDropdown}
-        setOpenId={setOpenDropdown}
+        isOpen={isOpen}
+        setOpenId={setOpenId}
         data={averiasDropdown}
         selectedValue={averia}
         onSelect={(item) => setAveria(item.value)}
+        active={active}
         placeholder="Seleccionar avería"
       />
 
       <Dropdown
         id="gravedades"
-        isOpen={openDropdown}
-        setOpenId={setOpenDropdown}
+        isOpen={isOpen}
+        setOpenId={setOpenId}
         data={gravedadesDropdown}
         selectedValue={grav}
+        active={active}
         onSelect={(item) => setGrav(item.value)}
         placeholder="Seleccionar gravedad"
       />

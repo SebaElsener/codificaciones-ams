@@ -19,6 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { usePortal } from "../components/Portal";
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,6 +40,8 @@ const gravedadesStellantis = require("../utils/gravedades-stellantis.json");
 
 export default function HomeScreen() {
   const [active, setActive] = useState<number | null>(null);
+  const [openId, setOpenId] = useState(null);
+  const { clear } = usePortal();
 
   const progress = useSharedValue(0);
 
@@ -59,15 +62,22 @@ export default function HomeScreen() {
     }).then(() => setFontsLoaded(true));
   }, []);
 
+  useEffect(() => {
+    if (active === null) {
+      setOpenId(null);
+    }
+  }, [active]);
+
   if (!fontsLoaded) return null;
 
   const close = () => {
+    clear();
     progress.value = withTiming(0, {}, () => {
       runOnJS(setActive)(null);
     });
   };
 
-  const renderContent = (i: number) => {
+  const renderContent = (i: number, openId, setOpenId, active) => {
     switch (i) {
       case 0:
         return (
@@ -76,7 +86,9 @@ export default function HomeScreen() {
             areasJson={areasAMS}
             averiasJson={averiasAMS}
             gravedadesJson={gravedadesAMS}
-            active
+            active={active}
+            isOpen={openId}
+            setOpenId={setOpenId}
           />
         );
       case 1:
@@ -86,7 +98,9 @@ export default function HomeScreen() {
             areasJson={areasFord}
             averiasJson={averiasFord}
             gravedadesJson={gravedadesFord}
-            active
+            active={active}
+            isOpen={openId}
+            setOpenId={setOpenId}
           />
         );
       case 2:
@@ -96,7 +110,9 @@ export default function HomeScreen() {
             areasJson={areasStellantis}
             averiasJson={averiasStellantis}
             gravedadesJson={gravedadesStellantis}
-            active
+            active={active}
+            isOpen={openId}
+            setOpenId={setOpenId}
           />
         );
     }
@@ -199,7 +215,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 <View style={{ flex: 1, marginTop: 30 }}>
-                  {renderContent(i)}
+                  {renderContent(i, openId, setOpenId, active)}
                 </View>
               </View>
             )}
