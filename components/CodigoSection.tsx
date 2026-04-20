@@ -7,9 +7,8 @@ export default function CodigoSection({
   areasJson,
   averiasJson,
   gravedadesJson,
-  dark,
   active,
-  baseColor,
+  animatedColor,
 }) {
   const [area, setArea] = useState("");
   const [averia, setAveria] = useState("");
@@ -71,28 +70,12 @@ export default function CodigoSection({
   // 🔹 código compacto
   const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
 
-  const soften = (hex, amount = 0.7) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-
-    const mix = (c) => Math.round(c + (255 - c) * amount);
-
-    return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
-  };
-
-  const backgroundColor = active
-    ? soften(baseColor, dark ? 0.6 : 0.7)
-    : dark
-      ? "#121212"
-      : "#fff";
-
   return (
     <Animated.View
       style={{
         //flex: 1,
         padding: 15,
-        backgroundColor,
+        backgroundColor: animatedColor,
       }}
     >
       <Text
@@ -100,7 +83,6 @@ export default function CodigoSection({
           fontSize: 18,
           fontWeight: "bold",
           marginBottom: 10,
-          color: dark ? "#ffffff" : "#000000",
         }}
       >
         {title}
@@ -117,7 +99,6 @@ export default function CodigoSection({
         searchable
         searchValue={areaSearch}
         onSearchChange={setAreaSearch}
-        dark={dark}
       />
 
       <Dropdown
@@ -128,7 +109,6 @@ export default function CodigoSection({
         selectedValue={averia}
         onSelect={(item) => setAveria(item.value)}
         placeholder="Seleccionar avería"
-        dark={dark}
       />
 
       <Dropdown
@@ -139,7 +119,6 @@ export default function CodigoSection({
         selectedValue={grav}
         onSelect={(item) => setGrav(item.value)}
         placeholder="Seleccionar gravedad"
-        dark={dark}
       />
 
       {/* 🔥 RESULTADO */}
@@ -150,23 +129,22 @@ export default function CodigoSection({
             style={{
               fontWeight: "bold",
               fontSize: 16,
-              color: dark ? "#f8f7f7" : "#000",
             }}
           >
             {codigo}
           </Text>
 
           {/* Detalle */}
-          <Text style={{ marginTop: 5, color: dark ? "#fff" : "#000" }}>
+          <Text style={{ marginTop: 5 }}>
             {selectedArea && `${selectedArea.value} - ${selectedArea.label}`}
           </Text>
 
-          <Text style={{ marginTop: 5, color: dark ? "#fff" : "#000" }}>
+          <Text style={{ marginTop: 5 }}>
             {selectedAveria &&
               `${selectedAveria.value} - ${selectedAveria.label}`}
           </Text>
 
-          <Text style={{ marginTop: 5, color: dark ? "#fff" : "#000" }}>
+          <Text style={{ marginTop: 5 }}>
             {selectedGrav && `${selectedGrav.value} - ${selectedGrav.label}`}
           </Text>
         </View>

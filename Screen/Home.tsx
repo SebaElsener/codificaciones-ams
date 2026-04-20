@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import CodigoSection from "../components/CodigoSection";
 
 const tabs = ["AMS", "FORD", "STELLANTIS"];
 
-const baseColors = ["#f04646", "#51ca51", "#4343d5"];
+const baseColors = ["#b93131", "#2cba2c", "#4343d5"];
 
 // JSONs
 const areasAMS = require("../utils/areas-ams.json");
@@ -24,8 +24,12 @@ export default function HomeScreen() {
   const pagerRef = useRef(null);
 
   const [index, setIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const translateY = useRef(new Animated.Value(-6)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+  const tabWidth = containerWidth / tabs.length;
+  const [isDragging, setIsDragging] = useState(false);
 
   const soften = (hex, amount = 0.7) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -36,18 +40,36 @@ export default function HomeScreen() {
 
     return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
   };
-  const handlePageChange = (i) => {
-    setIndex(i);
 
-    translateY.setValue(0); // 👈 bajar primero
-
-    Animated.spring(translateY, {
-      toValue: -6,
+  const animateTab = (i) => {
+    // movimiento horizontal suave
+    Animated.timing(translateX, {
+      toValue: i * tabWidth,
+      duration: 220,
+      easing: Easing.bezier(0.4, 0, 0.2, 1),
       useNativeDriver: true,
-      tension: 120,
-      friction: 8,
     }).start();
+
+    // rebote vertical tipo iOS
+    Animated.sequence([
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateY, {
+        toValue: -8,
+        tension: 90,
+        friction: 14,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
+
+  const sharedColor = translateX.interpolate({
+    inputRange: tabs.map((_, i) => i * tabWidth),
+    outputRange: baseColors,
+  });
 
   return (
     <View
@@ -62,7 +84,12 @@ export default function HomeScreen() {
         }}
       >
         {/* 🧊 HEADER */}
-        <View style={{ flexDirection: "row" }}>
+        <View
+          onLayout={(e) => {
+            setContainerWidth(e.nativeEvent.layout.width);
+          }}
+          style={{ flexDirection: "row" }}
+        >
           {tabs.map((t, i) => {
             const isActive = index === i;
 
@@ -72,7 +99,6 @@ export default function HomeScreen() {
                 onPress={() => {
                   setIndex(i);
                   pagerRef.current?.setPage(i);
-                  handlePageChange(i);
                 }}
                 style={{
                   flex: 1,
@@ -83,13 +109,12 @@ export default function HomeScreen() {
                     : soften(baseColors[i], 0.7),
                   borderTopLeftRadius: 10,
                   borderTopRightRadius: 10,
-                  // transform: [{ translateY: isActive ? -6 : 0 }],
                 }}
               >
                 <Text
                   style={{
                     fontWeight: "700",
-                    color: isActive ? "#000" : "#555",
+                    color: isActive ? "#f5f3f3" : "#aca6a6",
                   }}
                 >
                   {t}
@@ -101,23 +126,27 @@ export default function HomeScreen() {
         <Animated.View
           style={{
             position: "absolute",
-            top: 90, // ajustá según tu layout
-            left: `${(100 / tabs.length) * index}%`,
-            width: `${100 / tabs.length}%`,
-            transform: [{ translateY }],
+            top: 90,
+            width: tabWidth,
+            transform: [{ translateX }, { translateY }],
             zIndex: 20,
+            elevation: 20,
+            backgroundColor: sharedColor,
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
           }}
         >
           <View
             style={{
               alignItems: "center",
               paddingVertical: 12,
-              backgroundColor: baseColors[index],
               borderTopLeftRadius: 10,
               borderTopRightRadius: 10,
             }}
           >
-            <Text style={{ fontWeight: "700" }}>{tabs[index]}</Text>
+            <Text style={{ fontWeight: "700", color: "#f3efef" }}>
+              {tabs[index]}
+            </Text>
           </View>
         </Animated.View>
 
@@ -132,18 +161,22 @@ export default function HomeScreen() {
             ref={pagerRef}
             style={{
               flex: 1,
-              // transform: [{ translateY: -6 }]
             }}
             initialPage={0}
             onPageSelected={(e) => {
-              handlePageChange(e.nativeEvent.position);
+              const i = e.nativeEvent.position;
+              setIndex(i);
+              animateTab(i);
+            }}
+            onPageScrollStateChanged={(e) => {
+              const state = e.nativeEvent.pageScrollState;
+              setIsDragging(state !== "idle");
             }}
           >
             <View key="0" style={{ flex: 1 }}>
               <Animated.View
                 style={{
                   flex: 1,
-                  // transform: [{ translateY: index === 0 ? -6 : 0 }],
                 }}
               >
                 <CodigoSection
@@ -152,7 +185,8 @@ export default function HomeScreen() {
                   averiasJson={averiasAMS}
                   gravedadesJson={gravedadesAMS}
                   active={index === 0}
-                  baseColor={baseColors[0]}
+                  animatedColor={sharedColor}
+                  isDragging={isDragging}
                 />
               </Animated.View>
             </View>
@@ -166,7 +200,6 @@ export default function HomeScreen() {
               <Animated.View
                 style={{
                   flex: 1,
-                  // transform: [{ translateY: index === 1 ? -6 : 0 }],
                 }}
               >
                 <CodigoSection
@@ -175,7 +208,8 @@ export default function HomeScreen() {
                   averiasJson={averiasFord}
                   gravedadesJson={gravedadesFord}
                   active={index === 1}
-                  baseColor={baseColors[1]}
+                  animatedColor={sharedColor}
+                  isDragging={isDragging}
                 />
               </Animated.View>
             </View>
@@ -184,7 +218,6 @@ export default function HomeScreen() {
               <Animated.View
                 style={{
                   flex: 1,
-                  // transform: [{ translateY: index === 2 ? -6 : 0 }],
                 }}
               >
                 <CodigoSection
@@ -193,7 +226,8 @@ export default function HomeScreen() {
                   averiasJson={averiasStellantis}
                   gravedadesJson={gravedadesStellantis}
                   active={index === 2}
-                  baseColor={baseColors[2]}
+                  animatedColor={sharedColor}
+                  isDragging={isDragging}
                 />
               </Animated.View>
             </View>
