@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Animated, Text, View } from "react-native";
+import { Animated, Text } from "react-native";
 import Dropdown from "../components/Dropdown";
 
 export default function CodigoSection({
@@ -68,14 +68,14 @@ export default function CodigoSection({
   const selectedGrav = gravedadesDropdown.find((g) => g.value === grav);
 
   // 🔹 código compacto
-  const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
+  // const codigo = area && averia && grav ? `${area}-${averia}-${grav}` : null;
 
   return (
     <Animated.View
       style={{
         //flex: 1,
         padding: 15,
-        backgroundColor: animatedColor,
+        //backgroundColor: animatedColor,
       }}
     >
       <Text
@@ -122,9 +122,8 @@ export default function CodigoSection({
       />
 
       {/* 🔥 RESULTADO */}
-      {codigo && (
+      {/* {codigo && (
         <View style={{ marginTop: 15 }}>
-          {/* Código */}
           <Text
             style={{
               fontWeight: "bold",
@@ -134,7 +133,6 @@ export default function CodigoSection({
             {codigo}
           </Text>
 
-          {/* Detalle */}
           <Text style={{ marginTop: 5 }}>
             {selectedArea && `${selectedArea.value} - ${selectedArea.label}`}
           </Text>
@@ -148,7 +146,7 @@ export default function CodigoSection({
             {selectedGrav && `${selectedGrav.value} - ${selectedGrav.label}`}
           </Text>
         </View>
-      )}
+      )} */}
     </Animated.View>
   );
 }

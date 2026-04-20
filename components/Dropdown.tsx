@@ -19,7 +19,6 @@ export default function Dropdown({
   isOpen,
   setOpenId,
   id,
-  dark,
 }) {
   const animation = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
@@ -59,16 +58,11 @@ export default function Dropdown({
       {searchable && (
         <TextInput
           placeholder="Buscar área..."
-          placeholderTextColor={dark ? "#888" : "#999"}
           value={searchValue}
           onChangeText={onSearchChange}
           style={{
-            borderWidth: 1,
-            color: dark ? "#fff" : "#000",
-            backgroundColor: dark ? "#1e1e1e" : "#fff",
-            borderColor: dark ? "#444" : "#ccc",
-            padding: 8,
-            borderRadius: 6,
+            borderBottomWidth: 1,
+            borderColor: "#ccc",
             marginBottom: 5,
           }}
         />
@@ -78,14 +72,13 @@ export default function Dropdown({
       <TouchableOpacity
         onPress={() => setOpenId(open ? null : id)}
         style={{
-          borderWidth: 1,
+          borderBottomWidth: 1,
           borderColor: open ? "#54bca2" : "#ccc",
           padding: 12,
           borderRadius: 6,
-          backgroundColor: dark ? "#1e1e1e" : "#fff",
         }}
       >
-        <Text style={{ fontWeight: "500", color: dark ? "#fff" : "#000" }}>
+        <Text style={{ fontWeight: "500" }}>
           {selectedItem
             ? `${selectedItem.value} - ${selectedItem.label}`
             : placeholder}
@@ -112,13 +105,6 @@ export default function Dropdown({
                 }}
                 style={{
                   padding: 10,
-                  backgroundColor: isSelected
-                    ? dark
-                      ? "#d4f5ec" // seleccionado en dark
-                      : "#d4f5ec" // seleccionado en light
-                    : dark
-                      ? "#121212" // fondo normal dark
-                      : "#fff", // fondo normal light
                   borderBottomWidth: 0.5,
                   borderColor: "#ccc",
                 }}
@@ -126,7 +112,6 @@ export default function Dropdown({
                 <Text
                   style={{
                     fontWeight: isSelected ? "bold" : "normal",
-                    color: !isSelected && dark ? "#fff" : "#000",
                   }}
                 >
                   {item.value} - {item.label}
