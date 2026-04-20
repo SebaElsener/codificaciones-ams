@@ -1,11 +1,29 @@
-import { useRef, useState } from "react";
-import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
-import PagerView from "react-native-pager-view";
+import { BlurView } from "expo-blur";
+import { useEffect, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CodigoSection from "../components/CodigoSection";
 
-const tabs = ["AMS", "FORD", "STELLANTIS"];
+import * as Font from "expo-font";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
-const baseColors = ["#b93131", "#2cba2c", "#4343d5"];
+const { width, height } = Dimensions.get("window");
+
+const tabs = ["AMS", "FORD", "STELLANTIS"];
 
 // JSONs
 const areasAMS = require("../utils/areas-ams.json");
@@ -21,219 +39,281 @@ const averiasStellantis = require("../utils/averias-stellantis.json");
 const gravedadesStellantis = require("../utils/gravedades-stellantis.json");
 
 export default function HomeScreen() {
-  const pagerRef = useRef(null);
+  const [active, setActive] = useState(null);
 
-  const [index, setIndex] = useState(0);
+  const progress = useSharedValue(0);
+  const dragY = useSharedValue(0);
+
+  const positions = [
+    { top: 120, left: 40, rotate: -8 },
+    { top: 200, left: 90, rotate: 6 },
+    { top: 280, left: 50, rotate: -2 },
+  ];
+
   const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
 
-  const translateY = useRef(new Animated.Value(-6)).current;
-  const translateX = useRef(new Animated.Value(0)).current;
-  const tabWidth = containerWidth / tabs.length;
-  const [isDragging, setIsDragging] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  const soften = (hex, amount = 0.7) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
+  useEffect(() => {
+    Font.loadAsync({
+      Hand: require("../assets/fonts/PatrickHand-Regular.ttf"),
+    }).then(() => setFontsLoaded(true));
+  }, []);
 
-    const mix = (c) => Math.round(c + (255 - c) * amount);
+  if (!fontsLoaded) return null;
 
-    return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+  const renderContent = (i) => {
+    switch (i) {
+      case 0:
+        return (
+          <CodigoSection
+            title="Códigos AMS"
+            areasJson={areasAMS}
+            averiasJson={averiasAMS}
+            gravedadesJson={gravedadesAMS}
+            active
+          />
+        );
+      case 1:
+        return (
+          <CodigoSection
+            title="Códigos Ford"
+            areasJson={areasFord}
+            averiasJson={averiasFord}
+            gravedadesJson={gravedadesFord}
+            active
+          />
+        );
+      case 2:
+        return (
+          <CodigoSection
+            title="Códigos Stellantis"
+            areasJson={areasStellantis}
+            averiasJson={averiasStellantis}
+            gravedadesJson={gravedadesStellantis}
+            active
+          />
+        );
+    }
   };
 
-  const animateTab = (i) => {
-    // movimiento horizontal suave
-    Animated.timing(translateX, {
-      toValue: i * tabWidth,
-      duration: 220,
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
-      useNativeDriver: true,
-    }).start();
+  function Card({
+    i,
+    t,
+    active,
+    setActive,
+    progress,
+    dragY,
+    pos,
+    renderContent,
+  }) {
+    const isActive = active === i;
+    const pressScale = useSharedValue(1);
 
-    // rebote vertical tipo iOS
-    Animated.sequence([
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.spring(translateY, {
-        toValue: -8,
-        tension: 90,
-        friction: 14,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
+    const gesture = Gesture.Pan()
+      .onUpdate((e) => {
+        if (isActive) {
+          dragY.value = e.translationY;
+        }
+      })
+      .onEnd((e) => {
+        if (e.translationY > 120 || e.velocityY > 1200) {
+          dragY.value = withTiming(0);
+          progress.value = withTiming(0, {}, () => {
+            runOnJS(setActive)(null);
+          });
+        } else {
+          dragY.value = withSpring(0);
+        }
+      });
 
-  const sharedColor = translateX.interpolate({
-    inputRange: tabs.map((_, i) => i * tabWidth),
-    outputRange: baseColors,
-  });
+    const style = useAnimatedStyle(() => {
+      const CARD_WIDTH = width * 0.85;
+      const CARD_HEIGHT = height * 0.5;
+
+      const centerX = containerWidth / 2 - CARD_WIDTH / 2;
+      const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
+
+      const translateX = interpolate(
+        progress.value,
+        [0, 1],
+        [pos.left, centerX],
+      );
+
+      const translateY =
+        interpolate(progress.value, [0, 1], [pos.top, centerY]) +
+        (isActive ? dragY.value : 0);
+
+      const baseScale = interpolate(progress.value, [0, 1], [1, 1.02]);
+
+      const dragScale = isActive
+        ? interpolate(dragY.value, [0, 300], [1.02, 0.92])
+        : baseScale;
+
+      const finalScale = dragScale * pressScale.value;
+
+      const rotate = `${interpolate(progress.value, [0, 1], [pos.rotate, 0])}deg`;
+
+      const w = interpolate(progress.value, [0, 1], [240, CARD_WIDTH]);
+      const h = interpolate(progress.value, [0, 1], [170, CARD_HEIGHT]);
+
+      return {
+        position: "absolute",
+        width: w,
+        height: h,
+        transform: [
+          { translateX },
+          { translateY },
+          { scale: finalScale },
+          { rotate },
+        ],
+        zIndex: isActive ? 100 : i,
+      };
+    });
+
+    return (
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.card, style]}>
+          {/* TEXTURA PNG */}
+          <Image
+            source={require("../assets/images/paper-texture.png")}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              opacity: 0.75,
+            }}
+          />
+
+          <TouchableOpacity
+            activeOpacity={1}
+            disabled={isActive}
+            onPressIn={() => {
+              pressScale.value = withTiming(0.96, { duration: 80 });
+            }}
+            onPressOut={() => {
+              pressScale.value = withSpring(1, {
+                damping: 10,
+                stiffness: 200,
+              });
+            }}
+            onPress={() => {
+              progress.value = 0; // asegurar estado inicial
+
+              setActive(i);
+
+              requestAnimationFrame(() => {
+                progress.value = withSpring(1);
+              });
+            }}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.inner}>
+              {!isActive && (
+                <>
+                  <Text style={styles.title}>{t}</Text>
+
+                  {[...Array(4)].map((_, j) => (
+                    <View key={j} style={styles.line(j)} />
+                  ))}
+                </>
+              )}
+
+              {isActive && (
+                <View style={{ flex: 1 }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      progress.value = withTiming(0, {}, () => {
+                        runOnJS(setActive)(null);
+                      });
+                    }}
+                    style={styles.close}
+                  >
+                    <Text>✕</Text>
+                  </TouchableOpacity>
+
+                  <View style={{ flex: 1, marginTop: 30 }}>
+                    {renderContent(i)}
+                  </View>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </GestureDetector>
+    );
+  }
 
   return (
     <View
-      style={{
-        flex: 1,
+      onLayout={(e) => {
+        setContainerWidth(e.nativeEvent.layout.width);
+        setContainerHeight(e.nativeEvent.layout.height);
       }}
+      style={{ flex: 1, backgroundColor: "#d9d488" }}
     >
-      <Animated.View
-        style={{
-          flex: 1,
-          paddingTop: 90,
-        }}
-      >
-        {/* 🧊 HEADER */}
-        <View
-          onLayout={(e) => {
-            setContainerWidth(e.nativeEvent.layout.width);
-          }}
-          style={{ flexDirection: "row" }}
-        >
-          {tabs.map((t, i) => {
-            const isActive = index === i;
-
-            return (
-              <TouchableOpacity
-                key={t}
-                onPress={() => {
-                  setIndex(i);
-                  pagerRef.current?.setPage(i);
-                }}
-                style={{
-                  flex: 1,
-                  alignItems: "center",
-                  paddingVertical: 12,
-                  backgroundColor: isActive
-                    ? baseColors[i]
-                    : soften(baseColors[i], 0.7),
-                  borderTopLeftRadius: 10,
-                  borderTopRightRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    fontWeight: "700",
-                    color: isActive ? "#f5f3f3" : "#aca6a6",
-                  }}
-                >
-                  {t}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      {/* blur */}
+      {active !== null && (
         <Animated.View
-          style={{
-            position: "absolute",
-            top: 90,
-            width: tabWidth,
-            transform: [{ translateX }, { translateY }],
-            zIndex: 20,
-            elevation: 20,
-            backgroundColor: sharedColor,
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
-          }}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              opacity: progress,
+            },
+          ]}
         >
-          <View
-            style={{
-              alignItems: "center",
-              paddingVertical: 12,
-              borderTopLeftRadius: 10,
-              borderTopRightRadius: 10,
-            }}
-          >
-            <Text style={{ fontWeight: "700", color: "#f3efef" }}>
-              {tabs[index]}
-            </Text>
-          </View>
+          <BlurView intensity={80} style={{ flex: 1 }} />
         </Animated.View>
+      )}
 
-        {/* 📦 PAGER */}
-        <Animated.View
-          style={{
-            flex: 1,
-            transform: [{ translateY }],
-          }}
-        >
-          <PagerView
-            ref={pagerRef}
-            style={{
-              flex: 1,
-            }}
-            initialPage={0}
-            onPageSelected={(e) => {
-              const i = e.nativeEvent.position;
-              setIndex(i);
-              animateTab(i);
-            }}
-            onPageScrollStateChanged={(e) => {
-              const state = e.nativeEvent.pageScrollState;
-              setIsDragging(state !== "idle");
-            }}
-          >
-            <View key="0" style={{ flex: 1 }}>
-              <Animated.View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <CodigoSection
-                  title="Códigos AMS"
-                  areasJson={areasAMS}
-                  averiasJson={averiasAMS}
-                  gravedadesJson={gravedadesAMS}
-                  active={index === 0}
-                  animatedColor={sharedColor}
-                  isDragging={isDragging}
-                />
-              </Animated.View>
-            </View>
-
-            <View
-              key="1"
-              style={{
-                flex: 1,
-              }}
-            >
-              <Animated.View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <CodigoSection
-                  title="Códigos Ford"
-                  areasJson={areasFord}
-                  averiasJson={averiasFord}
-                  gravedadesJson={gravedadesFord}
-                  active={index === 1}
-                  animatedColor={sharedColor}
-                  isDragging={isDragging}
-                />
-              </Animated.View>
-            </View>
-
-            <View key="2" style={{ flex: 1 }}>
-              <Animated.View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <CodigoSection
-                  title="Códigos Stellantis"
-                  areasJson={areasStellantis}
-                  averiasJson={averiasStellantis}
-                  gravedadesJson={gravedadesStellantis}
-                  active={index === 2}
-                  animatedColor={sharedColor}
-                  isDragging={isDragging}
-                />
-              </Animated.View>
-            </View>
-          </PagerView>
-        </Animated.View>
-      </Animated.View>
+      {tabs.map((t, i) => (
+        <Card
+          key={t}
+          i={i}
+          t={t}
+          active={active}
+          setActive={setActive}
+          progress={progress}
+          dragY={dragY}
+          pos={positions[i]}
+          renderContent={renderContent}
+        />
+      ))}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  inner: {
+    flex: 1,
+    padding: 16,
+  },
+  card: {
+    backgroundColor: "#f5ecd9",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 18,
+    overflow: "hidden",
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: "Hand",
+  },
+  line: (i) => ({
+    height: 1,
+    backgroundColor: "#d6d3c9",
+    marginTop: 10,
+    width: `${80 - i * 10}%`,
+  }),
+  close: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+});
