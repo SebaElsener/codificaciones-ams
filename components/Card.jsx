@@ -28,7 +28,7 @@ export default function Card({
 
   const style = useAnimatedStyle(() => {
     const CARD_WIDTH = width * 0.85;
-    const CARD_HEIGHT = height * 0.5;
+    const CARD_HEIGHT = height * 0.43;
 
     const centerX = containerWidth / 2 - CARD_WIDTH / 2;
     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;

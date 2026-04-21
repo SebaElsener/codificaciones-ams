@@ -103,113 +103,6 @@ export default function HomeScreen() {
     }
   };
 
-  // function Card({ i, t, pos }: any) {
-  //   const isActive = active === i;
-  //   const pressScale = useSharedValue(1);
-
-  //   const style = useAnimatedStyle(() => {
-  //     const CARD_WIDTH = width * 0.85;
-  //     const CARD_HEIGHT = height * 0.5;
-
-  //     const centerX = containerWidth / 2 - CARD_WIDTH / 2;
-  //     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
-
-  //     const translateX = interpolate(
-  //       progress.value,
-  //       [0, 1],
-  //       [pos.left, centerX]
-  //     );
-
-  //     const translateY = interpolate(
-  //       progress.value,
-  //       [0, 1],
-  //       [pos.top, centerY]
-  //     );
-
-  //     const baseScale = interpolate(progress.value, [0, 1], [1, 1.02]);
-  //     const finalScale = baseScale * pressScale.value;
-
-  //     const rotate = `${interpolate(
-  //       progress.value,
-  //       [0, 1],
-  //       [pos.rotate, 0]
-  //     )}deg`;
-
-  //     const w = interpolate(progress.value, [0, 1], [240, CARD_WIDTH]);
-  //     const h = interpolate(progress.value, [0, 1], [170, CARD_HEIGHT]);
-
-  //     return {
-  //       position: "absolute",
-  //       width: w,
-  //       height: h,
-  //       transform: [
-  //         { translateX },
-  //         { translateY },
-  //         { scale: finalScale },
-  //         { rotate },
-  //       ],
-  //       zIndex: isActive ? 100 : i,
-  //       opacity: isActive
-  //         ? interpolate(progress.value, [0, 0.01, 1], [0, 1, 1])
-  //         : 1,
-  //     };
-  //   });
-
-  //   return (
-  //     <Animated.View style={[styles.card, style]}>
-  //       {/* TEXTURA */}
-  //       <Image
-  //         source={require("../assets/images/paper-texture.png")}
-  //         style={styles.texture}
-  //       />
-
-  //       <TouchableOpacity
-  //         activeOpacity={1}
-  //         disabled={isActive}
-  //         onPressIn={() => {
-  //           pressScale.value = withTiming(0.96, { duration: 80 });
-  //         }}
-  //         onPressOut={() => {
-  //           pressScale.value = withSpring(1);
-  //         }}
-  //         onPress={() => {
-  //           progress.value = 0;
-  //           setActive(i);
-
-  //           requestAnimationFrame(() => {
-  //             progress.value = withSpring(1);
-  //           });
-  //         }}
-  //         style={{ flex: 1 }}
-  //       >
-  //         <View style={styles.inner}>
-  //           {!isActive && (
-  //             <>
-  //               <Text style={styles.title}>{t}</Text>
-
-  //               {[...Array(4)].map((_, j) => (
-  //                 <View key={j} style={styles.line(j)} />
-  //               ))}
-  //             </>
-  //           )}
-
-  //           {isActive && (
-  //             <View style={{ flex: 1 }}>
-  //               <TouchableOpacity onPress={close} style={styles.close}>
-  //                 <Text>✕</Text>
-  //               </TouchableOpacity>
-
-  //               <View style={{ flex: 1, marginTop: 30 }}>
-  //                 {renderContent(i, setOpenId)}
-  //               </View>
-  //             </View>
-  //           )}
-  //         </View>
-  //       </TouchableOpacity>
-  //     </Animated.View>
-  //   );
-  // }
-
   return (
     <View
       onLayout={(e) => {
@@ -257,7 +150,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   inner: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   card: {
     backgroundColor: "#f5ecd9",
@@ -273,7 +166,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    opacity: 0.18,
+    opacity: 0.88,
   },
   title: {
     fontSize: 18,
