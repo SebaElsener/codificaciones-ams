@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const positions = [
     { top: 120, left: 40, rotate: -8 },
     { top: 220, left: 90, rotate: 6 },
-    { top: 340, left: 50, rotate: 10 },
+    { top: 340, left: 50, rotate: 6 },
   ];
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -58,7 +58,7 @@ export default function HomeScreen() {
 
   const close = () => {
     clear();
-    progress.value = withTiming(0, {}, (finished) => {
+    progress.value = withTiming(0, { duration: 500 }, (finished) => {
       if (finished) runOnJS(setActive)(null);
     });
   };

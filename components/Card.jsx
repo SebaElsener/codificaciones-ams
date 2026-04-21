@@ -34,7 +34,9 @@ export default function Card({
     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
 
     const translateX = interpolate(progress.value, [0, 1], [pos.left, centerX]);
-    const translateY = interpolate(progress.value, [0, 1], [pos.top, centerY]);
+    const baseY = interpolate(progress.value, [0, 1], [pos.top, centerY]);
+    const arc = interpolate(progress.value, [0, 0.5, 1], [0, -25, 0]); // pico de 25px hacia arriba
+    const translateY = baseY + arc;
     const baseScale = interpolate(progress.value, [0, 1], [1, 1.02]);
     const finalScale = baseScale * pressScale.value;
     const rotate = `${interpolate(progress.value, [0, 1], [pos.rotate, 0])}deg`;
@@ -51,7 +53,7 @@ export default function Card({
         { scale: finalScale },
         { rotate },
       ],
-      zIndex: isActive ? 100 : i,
+      zIndex: isActive && progress.value > 0.35 ? 100 : i,
       opacity: 1,
     };
   });
