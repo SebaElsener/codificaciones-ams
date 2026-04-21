@@ -28,20 +28,44 @@ export default function Card({
 
   // estilo del card (igual que antes, pero opacity siempre 1)
   const style = useAnimatedStyle(() => {
+    // 👇 cards en reposo: quietas en el mazo, sin progress
+    if (!isActive) {
+      return {
+        position: "absolute",
+        width: 240,
+        height: 170,
+        transform: [
+          { translateX: pos.left },
+          { translateY: pos.top },
+          { scale: pressScale.value },
+          { rotate: `${pos.rotate}deg` },
+        ],
+        zIndex: i,
+        opacity: 1,
+      };
+    }
+
+    // 👇 solo la activa anima con progress (incluido el arco)
     const CARD_WIDTH = width * 0.85;
     const CARD_HEIGHT = height * 0.43;
     const centerX = containerWidth / 2 - CARD_WIDTH / 2;
     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
 
     const translateX = interpolate(progress.value, [0, 1], [pos.left, centerX]);
+
     const baseY = interpolate(progress.value, [0, 1], [pos.top, centerY]);
-    const arc = interpolate(progress.value, [0, 0.5, 1], [0, -25, 0]); // pico de 25px hacia arriba
+    const arc = interpolate(
+      progress.value,
+      [0, 0.25, 0.5, 0.75, 1],
+      [0, -90, -120, -90, 0],
+    );
     const translateY = baseY + arc;
+
     const baseScale = interpolate(progress.value, [0, 1], [1, 1.02]);
     const finalScale = baseScale * pressScale.value;
     const rotate = `${interpolate(progress.value, [0, 1], [pos.rotate, 0])}deg`;
     const w = interpolate(progress.value, [0, 1], [240, CARD_WIDTH]);
-    const h = interpolate(progress.value, [0, 1], [250, CARD_HEIGHT]);
+    const h = interpolate(progress.value, [0, 1], [170, CARD_HEIGHT]);
 
     return {
       position: "absolute",
@@ -53,7 +77,7 @@ export default function Card({
         { scale: finalScale },
         { rotate },
       ],
-      zIndex: isActive && progress.value > 0.35 ? 100 : i,
+      zIndex: progress.value > 0.35 ? 100 : i,
       opacity: 1,
     };
   });

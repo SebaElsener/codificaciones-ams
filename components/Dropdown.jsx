@@ -148,7 +148,7 @@ export default function Dropdown(props) {
         const screenHeight = Dimensions.get("window").height;
         const screenWidth = Dimensions.get("window").width;
 
-        const centeredTop = (screenHeight - DROPDOWN_HEIGHT) / 2 - 30;
+        const centeredTop = (screenHeight - DROPDOWN_HEIGHT) / 1.7 - 40;
         const centeredWidth = Math.min(screenWidth * 0.85, 320);
         const centeredLeft = (screenWidth - centeredWidth) / 2;
 
