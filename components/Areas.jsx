@@ -1,11 +1,7 @@
 import { useState } from "react";
-import {
-  FlatList,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
+import TextInput from "./AppTextInput";
 
 export default function Areas({
   areas,

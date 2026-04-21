@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
 
 export default function Averias({ averias, selectedValue, onSelect }) {
   const [open, setOpen] = useState(false);

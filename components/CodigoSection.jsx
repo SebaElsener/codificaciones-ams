@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Animated, Text } from "react-native";
+import { Animated } from "react-native";
+import Text from "./AppText";
 import Dropdown from "./Dropdown";
 
 export default function CodigoSection({
@@ -66,7 +67,14 @@ export default function CodigoSection({
 
   return (
     <Animated.View style={{ padding: 15 }}>
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+      <Text
+        style={{
+          fontSize: 22,
+          //fontWeight: "bold",
+          marginBottom: 10,
+          textAlign: "center",
+        }}
+      >
         {title}
       </Text>
 

@@ -1,15 +1,13 @@
 import { BlurView } from "expo-blur";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
-import CodigoSection from "../components/CodigoSection";
-
-import * as Font from "expo-font";
 import Animated, {
   runOnJS,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import Card from "../components/Card";
+import CodigoSection from "../components/CodigoSection";
 import { usePortal } from "../components/Portal";
 
 const { width, height } = Dimensions.get("window");
@@ -46,15 +44,11 @@ export default function HomeScreen() {
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
 
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
-  useEffect(() => {
-    Font.loadAsync({
-      Hand: require("../assets/fonts/PatrickHand-Regular.ttf"),
-    }).then(() => setFontsLoaded(true));
-  }, []);
-
-  if (!fontsLoaded) return null;
+  const previews = [
+    areasAMS.slice(0, 4),
+    areasFord.slice(0, 4),
+    areasStellantis.slice(0, 4),
+  ];
 
   const close = () => {
     clear();
@@ -110,7 +104,7 @@ export default function HomeScreen() {
         setContainerWidth(e.nativeEvent.layout.width);
         setContainerHeight(e.nativeEvent.layout.height);
       }}
-      style={{ flex: 1, backgroundColor: "#d9d488" }}
+      style={{ flex: 1, backgroundColor: "#eae6b1" }}
     >
       {/* 👇 OVERLAY CLICKEABLE */}
       {active !== null && (
@@ -131,6 +125,7 @@ export default function HomeScreen() {
           i={i}
           t={t}
           pos={positions[i]}
+          preview={previews[i]}
           active={active}
           setActive={setActive}
           setOpenId={setOpenId}
@@ -155,7 +150,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
-    backgroundColor: "#f5ecd9",
+    backgroundColor: "#95969a",
     borderRadius: 12,
     shadowColor: "#000",
     shadowOpacity: 0.25,
@@ -171,12 +166,12 @@ const styles = StyleSheet.create({
     opacity: 0.88,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: "Hand",
   },
   line: (i) => ({
     height: 1,
-    backgroundColor: "#d6d3c9",
+    backgroundColor: "#ffc400",
     marginTop: 10,
     width: `${80 - i * 10}%`,
   }),
@@ -185,5 +180,15 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     zIndex: 10,
+  },
+  previewLine: {
+    ///fontFamily: "Hand",
+    fontSize: 15,
+    color: "#3a3a3a",
+    marginTop: 6,
+  },
+  previewCode: {
+    //fontFamily: "Hand",
+    color: "#8b6b2e", // un toque "lapicera de madera"
   },
 });

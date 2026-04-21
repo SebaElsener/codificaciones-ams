@@ -3,12 +3,12 @@ import {
   Animated,
   Dimensions,
   ScrollView,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { usePortal } from "../components/Portal";
+import Text from "./AppText";
+import TextInput from "./AppTextInput";
 
 const DROPDOWN_HEIGHT = 200;
 const SEARCH_HEIGHT = 44;
@@ -107,6 +107,7 @@ export default function Dropdown(props) {
                 borderBottomWidth: 1,
                 borderColor: "#ccc",
                 padding: 10,
+                fontSize: 18,
                 backgroundColor: "#fff",
               }}
             />
@@ -128,7 +129,7 @@ export default function Dropdown(props) {
                     borderColor: "#ccc",
                   }}
                 >
-                  <Text style={{ fontWeight: isSelected ? "bold" : "normal" }}>
+                  <Text style={{ fontSize: 18 }}>
                     {item.value} - {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -201,7 +202,7 @@ export default function Dropdown(props) {
           padding: 12,
         }}
       >
-        <Text>
+        <Text style={{ fontSize: 18 }}>
           {selectedItem
             ? `${selectedItem.value} - ${selectedItem.label}`
             : placeholder}

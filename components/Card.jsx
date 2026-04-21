@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import Text from "./AppText";
 
 export default function Card({
   i,
@@ -22,6 +23,7 @@ export default function Card({
   width,
   height,
   styles,
+  preview,
 }) {
   const isActive = active === i;
   const pressScale = useSharedValue(1);
@@ -47,7 +49,7 @@ export default function Card({
 
     // 👇 solo la activa anima con progress (incluido el arco)
     const CARD_WIDTH = width * 0.85;
-    const CARD_HEIGHT = height * 0.43;
+    const CARD_HEIGHT = height * 0.45;
     const centerX = containerWidth / 2 - CARD_WIDTH / 2;
     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
 
@@ -126,9 +128,19 @@ export default function Card({
             style={restStyle}
           >
             <Text style={styles.title}>{t}</Text>
-            {[...Array(4)].map((_, j) => (
-              <View key={j} style={styles.line(j)} />
-            ))}
+            <View style={{ marginTop: 10 }}>
+              {preview.map((item) => (
+                <Text
+                  key={item.id}
+                  numberOfLines={1}
+                  style={styles.previewLine}
+                >
+                  <Text style={styles.previewCode}>{item.id}</Text>
+                  {"  "}
+                  {item.descripcion}
+                </Text>
+              ))}
+            </View>
           </Animated.View>
 
           {/* Contenido abierto: solo se monta si está activa, overlay absoluto */}
