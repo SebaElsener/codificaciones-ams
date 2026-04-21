@@ -12,6 +12,13 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "components/Areas.tsx"
+    "components/Areas.jsx",
+    "components/Portal.jsx",
+    "components/Dropdown.jsx",
+    "components/CodigoSection.jsx",
+    "Screen/Home.jsx",
+    "components/Averias.jsx",
+    "components/PaperTexture.jsx",
+    "components/Gravedades.jsx"
   ]
 }

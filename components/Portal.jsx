@@ -29,7 +29,11 @@ export function PortalProvider({ children }) {
       {children}
       <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
         {nodes.map((n) => (
-          <View key={n.key} style={StyleSheet.absoluteFill}>
+          <View
+            key={n.key}
+            pointerEvents="box-none"
+            style={StyleSheet.absoluteFill}
+          >
             {n.node}
           </View>
         ))}
