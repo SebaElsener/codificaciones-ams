@@ -1,4 +1,4 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -26,10 +26,10 @@ export default function Card({
   const isActive = active === i;
   const pressScale = useSharedValue(1);
 
+  // estilo del card (igual que antes, pero opacity siempre 1)
   const style = useAnimatedStyle(() => {
     const CARD_WIDTH = width * 0.85;
     const CARD_HEIGHT = height * 0.43;
-
     const centerX = containerWidth / 2 - CARD_WIDTH / 2;
     const centerY = containerHeight / 2 - CARD_HEIGHT / 2;
 
@@ -39,7 +39,7 @@ export default function Card({
     const finalScale = baseScale * pressScale.value;
     const rotate = `${interpolate(progress.value, [0, 1], [pos.rotate, 0])}deg`;
     const w = interpolate(progress.value, [0, 1], [240, CARD_WIDTH]);
-    const h = interpolate(progress.value, [0, 1], [170, CARD_HEIGHT]);
+    const h = interpolate(progress.value, [0, 1], [250, CARD_HEIGHT]);
 
     return {
       position: "absolute",
@@ -52,17 +52,27 @@ export default function Card({
         { rotate },
       ],
       zIndex: isActive ? 100 : i,
-      opacity: isActive
-        ? interpolate(progress.value, [0, 0.01, 1], [0, 1, 1])
-        : 1,
+      opacity: 1,
     };
   });
+
+  // 👇 cross-fade: el contenido "rest" se ve cuando progress es bajo,
+  //                el contenido "abierto" cuando progress es alto.
+  // Para las cards no activas, opacity siempre 1 (no las queremos esconder).
+  const restStyle = useAnimatedStyle(() => ({
+    opacity: isActive ? 1 - progress.value : 1,
+  }));
+
+  const openStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+  }));
 
   return (
     <Animated.View style={[styles.card, style]}>
       <Image
         source={require("../assets/images/paper-texture.png")}
         style={styles.texture}
+        resizeMode="cover"
       />
 
       <TouchableOpacity
@@ -84,24 +94,29 @@ export default function Card({
         style={{ flex: 1 }}
       >
         <View style={styles.inner}>
-          {!isActive && (
-            <>
-              <Text style={styles.title}>{t}</Text>
-              {[...Array(4)].map((_, j) => (
-                <View key={j} style={styles.line(j)} />
-              ))}
-            </>
-          )}
+          {/* Contenido en reposo: título + líneas. Siempre montado. */}
+          <Animated.View
+            pointerEvents={isActive ? "none" : "auto"}
+            style={restStyle}
+          >
+            <Text style={styles.title}>{t}</Text>
+            {[...Array(4)].map((_, j) => (
+              <View key={j} style={styles.line(j)} />
+            ))}
+          </Animated.View>
 
+          {/* Contenido abierto: solo se monta si está activa, overlay absoluto */}
           {isActive && (
-            <View style={{ flex: 1 }}>
+            <Animated.View
+              style={[StyleSheet.absoluteFill, { padding: 16 }, openStyle]}
+            >
               <TouchableOpacity onPress={close} style={styles.close}>
                 <Text>✕</Text>
               </TouchableOpacity>
               <View style={{ flex: 1, marginTop: 30 }}>
                 {renderContent(i, setOpenId)}
               </View>
-            </View>
+            </Animated.View>
           )}
         </View>
       </TouchableOpacity>

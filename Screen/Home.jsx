@@ -35,11 +35,12 @@ export default function HomeScreen() {
   const { clear } = usePortal();
 
   const progress = useSharedValue(0);
+  const fadeIn = useSharedValue(1);
 
   const positions = [
     { top: 120, left: 40, rotate: -8 },
-    { top: 200, left: 90, rotate: 6 },
-    { top: 280, left: 50, rotate: -2 },
+    { top: 220, left: 90, rotate: 6 },
+    { top: 340, left: 50, rotate: 10 },
   ];
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -57,8 +58,8 @@ export default function HomeScreen() {
 
   const close = () => {
     clear();
-    progress.value = withTiming(0, {}, () => {
-      runOnJS(setActive)(null);
+    progress.value = withTiming(0, {}, (finished) => {
+      if (finished) runOnJS(setActive)(null);
     });
   };
 
@@ -141,6 +142,7 @@ export default function HomeScreen() {
           width={width}
           height={height}
           styles={styles}
+          fadeIn={fadeIn}
         />
       ))}
     </View>
